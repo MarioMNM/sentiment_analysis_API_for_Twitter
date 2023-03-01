@@ -1,2 +1,4 @@
 data/*
 model/.ipynb_checkpoints
+model/saved_model/blstm_model/*
+model/model_weights.h5
