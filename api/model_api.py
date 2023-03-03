@@ -8,6 +8,7 @@ import re
 import string
 import snscrape.modules.twitter as sntwitter
 from datetime import datetime, timedelta
+from utils.load_files import download_model, download_tokenizer
 import tensorflow as tf
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -32,16 +33,22 @@ class SenimentModel:
     def __init__(self):
         self._model_path = './model/saved_model/blstm_model'
         self._tokenizer_path = './model/saved_tokenizer/tokenizer.pickle'
-
+        self.tokenizer = Tokenizer()
         try:
             # Load the saved tokenizer
-            self.tokenizer = Tokenizer()
             with open(self._tokenizer_path, 'rb') as handle:
                 self.tokenizer = pickle.load(handle)
+        except:
+            with open(download_tokenizer(), 'rb') as handle:
+                self.tokenizer = pickle.load(handle)
+                
+        try:   
             # Load the saved model
             self.model = load_model(self._model_path)
+        except:
+            self.model = load_model(download_model())
 
-        except Exception as e: print(e)
+
 
     def _scrapp_tweet(self, topic_name=None, username=None, date_init=None, date_end=None, limit_number_search=None):
         # Creating list to append tweet data to
