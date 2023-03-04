@@ -2,6 +2,7 @@
 import pandas as pd
 import numpy as np
 from pydantic import BaseModel
+from typing import Union
 import joblib
 import pickle
 import re
@@ -9,6 +10,7 @@ import string
 import snscrape.modules.twitter as sntwitter
 from datetime import datetime, timedelta
 from utils.load_files import download_model, download_tokenizer
+from utils.process_text import clean_text
 import tensorflow as tf
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
@@ -17,11 +19,12 @@ from tensorflow.keras.models import load_model
 
 # 2. Class which describes a single flower measurements
 class SearchedTweets(BaseModel):
-    topic_name: str
-    username: str
-    date_init: str
-    date_end: str
-    limit_number_search: int
+    description: Union[str, None] = None
+    topic_name: Union[str, None] = None
+    username: Union[str, None] = None
+    date_init: Union[str, None] = None
+    date_end: Union[str, None] = None
+    limit_number_search: int = 100
     
 
 
@@ -47,7 +50,6 @@ class SenimentModel:
             self.model = load_model(self._model_path)
         except:
             self.model = load_model(download_model())
-
 
 
     def _scrapp_tweet(self, topic_name=None, username=None, date_init=None, date_end=None, limit_number_search=None):
@@ -82,12 +84,10 @@ class SenimentModel:
         tweets_df = pd.DataFrame(attributes_container, columns=["User", "Date Created", "Number of Likes", "Source of Tweet", "Tweet"])
         # Applying the cleaning function to both test and training datasets
         tweets_df["Tweet"] = tweets_df["Tweet"].apply(lambda x: clean_text(x))
-        # Applying the function to both test and training datasets
-        tweets_df["Tweet"] = tweets_df["Tweet"].apply(lambda x: remove_emoji(x))
         return tweets_df[["Date Created", "Number of Likes", "Tweet"]]
 
 
-    def _preprocess_tweet(self, tweets_df: pd.DataFrame):
+    def _preprocess_tweet(self, tweets_df: pd.DataFrame):      
         tweets = tweets_df['Tweet'].values
 
         input_sequence = self.tokenizer.texts_to_sequences(tweets)
@@ -96,7 +96,13 @@ class SenimentModel:
 
 
     def predict(self, topic_name=None, username=None, date_init=None, date_end=None, limit_number_search=None):
+        
+        
         tweets_df = self._scrapp_tweet(topic_name, username, date_init, date_end, limit_number_search)
+
+        if len(tweets_df) == 0:
+            return tweets_df
+        
         processed_tweet = self._preprocess_tweet(tweets_df)
 
         # predict the sentiment probabilities
@@ -109,27 +115,3 @@ class SenimentModel:
 
         return tweets_df[["Date Created", "Number of Likes", "Tweet", "Sentiment", "Probability"]]
     
-def clean_text(text):
-    '''Make text lowercase, remove text in square brackets,remove links,remove punctuation
-    and remove words containing numbers.'''
-    text = text.lower()
-    text = re.sub("@[A-Za-z0-9_]+","", text)
-    text = re.sub("#[A-Za-z0-9_]+","", text)
-    text = re.sub('\[.*?\]', '', text)
-    text = re.sub('https?://\S+|www\.\S+', '', text)
-    text = re.sub('<.*?>+', '', text)
-    text = re.sub('[%s]' % re.escape(string.punctuation), '', text)
-    text = re.sub('\n', '', text)
-    text = re.sub('\w*\d\w*', '', text)
-    return text
-
-def remove_emoji(text):
-    emoji_pattern = re.compile("["
-                           u"\U0001F600-\U0001F64F"  # emoticons
-                           u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-                           u"\U0001F680-\U0001F6FF"  # transport & map symbols
-                           u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
-                           u"\U00002702-\U000027B0"
-                           u"\U000024C2-\U0001F251"
-                           "]+", flags=re.UNICODE)
-    return emoji_pattern.sub(r'', text)
