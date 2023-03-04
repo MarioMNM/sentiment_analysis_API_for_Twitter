@@ -30,13 +30,13 @@ async def predict_sentiment(tweets: SearchedTweets):
     try:
         tweets_df = model.predict(
             tweets.topic_name, tweets.username, tweets.date_init, tweets.date_end, tweets.limit_number_search
-        )
+        )            
     
     except Exception as e:
+        if str(e) == 'empty query':
+            raise NoMatchException(tweets)
+        
         raise PredictionErrorException(error_message=str(e))
-
-    if len(tweets_df) == 0:
-        raise NoMatchException(tweets)
     
     tweets_json = tweets_df.to_json()
     return tweets_json
