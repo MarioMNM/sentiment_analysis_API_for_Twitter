@@ -4,24 +4,28 @@ This project implements an API with a deep learning model (Bidirectional LSTM) f
 
 ## Installation
 
-To use this API, you need to have Python 3 installed on your system. You can then install the required packages by running:
+To use this API, you need to have Docker installed on your system. You can then build and run the Docker container by running:
+
+```
+docker build -t sentiment-analysis-api .
+docker run -p 8000:8000 --name sentiment-api sentiment-analysis-app
+```
+
+This will build the Docker image and run the container, which listens on http://localhost:8000/. I strongly recommend visiting the following page, which offers an interactive UI of the API: http://localhost:8000/docs
+
+If you don't want to use Docker you can install the requiered packages by running:
 
 ```
 pip install -r requirements.txt
 ```
 
-This will install all the necessary packages, including TensorFlow, FastAPI and Uvicorn.
-
-## Usage
-
-To start the API server, run:
+And then start the API server running the next command:
 
 ```
 uvicorn api.main:app --reload
 ```
 
-
-This will start the FastAPI server, which listens on `http://127.0.0.1:8000/`. I strongly recommend to visit the following page wich offers an interactive UI of the API: `http://127.0.0.1:8000/docs`
+## Usage
 
 You can then send requests to the API using the following attributes:
 
