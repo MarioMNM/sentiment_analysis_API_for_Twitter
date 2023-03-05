@@ -1,6 +1,9 @@
 # 1. Library imports
 import uvicorn
+import os
+from uvicorn import run
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from api.model_api import SearchedTweets, SenimentModel
 
 
@@ -9,7 +12,17 @@ from api.model_api import SearchedTweets, SenimentModel
 app = FastAPI()
 model = SenimentModel()
 
+origins = ["*"]
+methods = ["*"]
+headers = ["*"]
 
+app.add_middleware(
+    CORSMiddleware, 
+    allow_origins = origins,
+    allow_credentials = True,
+    allow_methods = methods,
+    allow_headers = headers    
+)
 
 class NoMatchException(HTTPException):
     def __init__(self, tweets: SearchedTweets):
@@ -22,6 +35,10 @@ class PredictionErrorException(HTTPException):
         super().__init__(status_code=500, detail=detail)
 
 
+
+@app.get("/")
+async def root():
+    return {"message": "Welcome to the Sentiment Analysis for Twieets API!"}
 
 # 3. Expose the prediction functionality, make a prediction from the passed
 #    JSON data and return the predicted flower species with the confidence
@@ -44,6 +61,5 @@ async def predict_sentiment(tweets: SearchedTweets):
 
 
 # 4. Run the API with uvicorn
-#    Will run on http://127.0.0.1:8000
-if __name__ == '__main__':
-    uvicorn.run(app, host='127.0.0.1', port=8000)
+if __name__ == "__main__":
+    run(app, host="0.0.0.0", port=8000)
