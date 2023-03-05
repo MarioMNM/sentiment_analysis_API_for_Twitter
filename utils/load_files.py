@@ -2,6 +2,12 @@ import os
 import gdown
 
 def download_model():
+    """
+    Downloads a pre-trained model from Google Drive using the gdown package.
+
+    Returns:
+    destination_path (str): The path to the saved model.
+    """
     url = "https://drive.google.com/drive/folders/1B2C9CIzZYhuGUd82sHsH2gAmqvtSfhTh?usp=sharing"
     gdown.download_folder(url)
     source_path = './blstm_model'

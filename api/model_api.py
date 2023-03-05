@@ -1,4 +1,3 @@
-# 1. Library imports
 import pandas as pd
 import numpy as np
 from pydantic import BaseModel
@@ -17,9 +16,23 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.models import load_model
 
 
-# 2. Class which describes a single flower measurements
 class SearchedTweets(BaseModel):
-    description: Union[str, None] = None
+    """
+    Class defining the attributes of searched tweets.
+
+    Attributes:
+    -----------
+    topic_name : str, optional
+        The topic or keyword to search for in tweets.
+    username : str, optional
+        The Twitter username to search for tweets from.
+    date_init : str, optional
+        The start date to search tweets from (YYYY-MM-DD).
+    date_end : str, optional
+        The end date to search tweets up to (YYYY-MM-DD).
+    limit_number_search : int, optional
+        The maximum number of tweets to return in the search.
+    """
     topic_name: Union[str, None] = None
     username: Union[str, None] = None
     date_init: Union[str, None] = None
@@ -28,17 +41,31 @@ class SearchedTweets(BaseModel):
     
 
 
-# 3. Class for training the model and making predictions
 class SenimentModel:
-    # 6. Class constructor, loads the dataset and loads the model
-    #    if exists. If not, calls the _train_model method and 
-    #    saves the model
+    """
+    Class for predicting the sentiment of tweets.
+
+    Attributes:
+    -----------
+    _model_path : str
+        The path to the saved Keras model for predicting sentiment.
+    _tokenizer_path : str
+        The path to the saved tokenizer for preprocessing text.
+    tokenizer : keras.preprocessing.text.Tokenizer
+        The tokenizer object for converting text to sequences of integers.
+    model : keras.engine.sequential.Sequential
+        The Keras model for predicting sentiment.
+    """
     def __init__(self):
+        """
+        Initialize the SenimentModel object.
+
+        Loads the saved Keras model and tokenizer for preprocessing text.
+        """
         self._model_path = './model/saved_model/blstm_model'
         self._tokenizer_path = './model/saved_tokenizer/tokenizer.pickle'
         self.tokenizer = Tokenizer()
         try:
-            # Load the saved tokenizer
             with open(self._tokenizer_path, 'rb') as handle:
                 self.tokenizer = pickle.load(handle)
         except:
@@ -46,14 +73,33 @@ class SenimentModel:
                 self.tokenizer = pickle.load(handle)
                 
         try:   
-            # Load the saved model
             self.model = load_model(self._model_path)
         except:
             self.model = load_model(download_model())
 
 
     def _scrapp_tweet(self, topic_name=None, username=None, date_init=None, date_end=None, limit_number_search=None):
-        # Creating list to append tweet data to
+        """
+        Scrape tweets based on search query.
+
+        Parameters:
+        -----------
+        topic_name : str, optional
+            The topic or keyword to search for in tweets.
+        username : str, optional
+            The Twitter username to search for tweets from.
+        date_init : str, optional
+            The start date to search tweets from (YYYY-MM-DD).
+        date_end : str, optional
+            The end date to search tweets up to (YYYY-MM-DD).
+        limit_number_search : int, optional
+            The maximum number of tweets to return in the search.
+
+        Returns:
+        --------
+        pandas.core.frame.DataFrame
+            A DataFrame containing the scraped tweets with cleaned text.
+        """
         attributes_container = []
 
         if not limit_number_search: limit_number_search = 100
@@ -87,7 +133,20 @@ class SenimentModel:
         return tweets_df[["Date Created", "Number of Likes", "Tweet"]]
 
 
-    def _preprocess_tweet(self, tweets_df: pd.DataFrame):      
+    def _preprocess_tweet(self, tweets_df: pd.DataFrame):   
+        """
+        Preprocesses cleaned tweets to be fed into the Keras neural network.
+
+        Parameters:
+        -----------
+        tweets_df : pd.DataFrame
+            The cleaned tweets in a pd.DataFrame format.
+
+        Returns:
+        --------
+        pandas.core.frame.DataFrame
+            A DataFrame containing the preprocessed tweets.
+        """   
         tweets = tweets_df['Tweet'].values
 
         input_sequence = self.tokenizer.texts_to_sequences(tweets)
@@ -96,7 +155,27 @@ class SenimentModel:
 
 
     def predict(self, topic_name=None, username=None, date_init=None, date_end=None, limit_number_search=None):
-        
+        """
+        Takes search query parameters as arguments and returns a Pandas DataFrame of predicted sentiments.
+
+        Parameters:
+        -----------
+        topic_name : str, optional
+            The topic or keyword to search for in tweets.
+        username : str, optional
+            The Twitter username to search for tweets from.
+        date_init : str, optional
+            The start date to search tweets from (YYYY-MM-DD).
+        date_end : str, optional
+            The end date to search tweets up to (YYYY-MM-DD).
+        limit_number_search : int, optional
+            The maximum number of tweets to return in the search.
+
+        Returns:
+        --------
+        pandas.core.frame.DataFrame
+            A DataFrame containing the predictions and the cleaned tweets.
+        """   
         
         tweets_df = self._scrapp_tweet(topic_name, username, date_init, date_end, limit_number_search)
 

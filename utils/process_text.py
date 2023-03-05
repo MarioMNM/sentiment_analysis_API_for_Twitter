@@ -3,8 +3,25 @@ import string
 
 
 def clean_text(text):
-    '''Make text lowercase, remove text in square brackets,remove links,remove punctuation
-    and remove words containing numbers.'''
+    """
+    Cleans the given text by performing the following operations:
+    - Convert the text to lowercase.
+    - Remove all user mentions.
+    - Remove all hashtags.
+    - Remove text in square brackets.
+    - Remove all URLs.
+    - Remove all HTML tags.
+    - Remove all punctuation.
+    - Remove all newline characters.
+    - Remove words containing numbers.
+    - Remove all emojis.
+
+    Args:
+    text (str): The text to be cleaned.
+
+    Returns:
+    text (str): The cleaned text.
+    """
     text = text.lower()
     text = re.sub("@[A-Za-z0-9_]+","", text)
     text = re.sub("#[A-Za-z0-9_]+","", text)
