@@ -1,6 +1,6 @@
 # Sentiment Analysis API for Twitter with a Deep Learnig model and FastAPI
 
-This project implements an API with a deep learning model (Bidirectional LSTM) for sentiment analysis of tweets by topic, username, and/or date. The model was trained on a large dataset of tweets (around 1.6 million), and it can classify each tweet as positive or negative.
+This project implements an API with a deep learning model (Bidirectional LSTM) for sentiment analysis of tweets. The api searches tweets by topic, username and/or date and obtains a prediction of tweets matching the query. The model was trained on a large dataset of tweets (around 1.6 million), and it can classify each tweet as positive or negative.
 
 ## Installation
 
